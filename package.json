@@ -5,7 +5,6 @@
   "private": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "audiomanifest": "node scripts/make-audio-manifest.js",
     "watch": "webpack --watch",
     "start": "webpack serve",
     "build": "webpack"
