@@ -1,16 +1,11 @@
 import {IPackageJson} from 'package-json-type'
-import {OneShot, Loops} from './types'
+import {OneShot, Loops, FileList} from './types'
 
 export const getChoice = (max: number) => {
     return Math.floor(Math.random() * max) 
 }
 
-interface CompileFilesReturn {
-    loops: Loops
-    oneShot: OneShot
-}
-
-export const compileFiles = async (): Promise<CompileFilesReturn> => {
+export const compileFiles = async (): Promise<FileList> => {
     // Build a list of audio files structured for random selection
     var manifest: IPackageJson
 
