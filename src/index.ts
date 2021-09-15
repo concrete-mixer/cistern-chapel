@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import printMe from './print.js';
+import { controlFlow } from './lib/control'
 
 function component() {
   const element = document.createElement('div');
@@ -8,13 +8,11 @@ function component() {
   // Lodash, now imported by this script
   element.innerHTML = _.join(['Hello', 'webpack'], ' ');
 
-  btn.innerHTML = 'Click me and check the console!';
-  btn.onclick = printMe;
-
+  btn.innerHTML = 'Ploy';
+  btn.addEventListener('click', controlFlow)
   element.appendChild(btn);
-
+  
   return element;
 }
 
 document.body.appendChild(component());
-console.log('fish')

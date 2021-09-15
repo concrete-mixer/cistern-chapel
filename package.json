@@ -26,6 +26,8 @@
   },
   "dependencies": {
     "lodash": "^4.17.21",
+    "package-json-type": "^1.0.3",
+    "tone": "^14.7.77",
     "tune": "^0.2.1"
   }
 }
