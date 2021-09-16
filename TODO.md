@@ -1,3 +1,1 @@
-- Rebuild the the random file finding using the auto manifest file
-- Remove the script for generating the manifest, BUT commit it first for posterity as I learned some things doing it.
-- TSify everything
+Class up Player

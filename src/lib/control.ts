@@ -1,21 +1,30 @@
-import * as Tone from 'tone'
-import { getChoice, compileFiles } from './helpers'
-import { Loops, OneShot, FileList } from './types'
+import * as Tone from 'tone';
+import { compileFiles } from './helpers';
+import { LoopManager } from './classes';
+import { defaultFade } from './constants';
 
-export const controlFlow = async () => {
-    const {loops, oneShot} = await compileFiles()
+let lm: LoopManager;
+
+export const start = async (): Promise<void> => {
+    // Need this to determine what audio files we can use
+    await compileFiles();
 
     // TODO: for now, make this a single iteration
     // - Create looper
     // - Set up interface for generating one-shot sounds arbitrarily
-    Tone.start()
-    const pingPong = new Tone.PingPongDelay({delayTime: "4n", wet: 0.2, feedback: 0.2}).toDestination(); 
-    const loopFile = loops[getChoice(loops.length - 1)]
-    const player = new Tone.Player({ 
-        url: loopFile, autostart: true, loop: true, reverse: true, volume: 0.2, fadeIn: 4, fadeOut: 4 
-    }).connect(pingPong) 
-}
+    Tone.start();
 
-export const controlStop = () => {
-    Tone.Transport.stop()
-}
+    // Create loop
+    if (!lm) {
+        lm = new LoopManager();
+    } else {
+        lm.respawn();
+    }
+
+    Tone.Transport.start();
+};
+
+export const stop = (): void => {
+    Tone.Transport.stop();
+    setTimeout(() => lm.dispose(), defaultFade * 1000);
+};
