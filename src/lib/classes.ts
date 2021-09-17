@@ -1,7 +1,7 @@
-import { defaultFade } from './constants';
-import { getBoolChoice, getLoops, getNumericChoice, getPanPositions } from './helpers';
-import * as Tone from 'tone';
-import { PlayerOptions, ToneAudioNode } from 'tone/build/esm';
+import { defaultFade } from "./constants";
+import { getBoolChoice, getLoops, getNumericChoice, getPanPositions } from "./helpers";
+import * as Tone from "tone";
+import { PlayerOptions, ToneAudioNode } from "tone/build/esm";
 
 const effectsChoices = [Tone.PingPongDelay];
 
@@ -10,7 +10,7 @@ export class EffectsChain {
 
     constructor(node: ToneAudioNode) {
         const choice = effectsChoices[getNumericChoice(effectsChoices.length)];
-        this.connectNode = new choice({ delayTime: '4n', wet: 0.2, feedback: 0.2 }).toDestination();
+        this.connectNode = new choice({ delayTime: "4n", wet: 0.2, feedback: 0.2 }).toDestination();
         node.connect(this.connectNode);
     }
 }
@@ -34,7 +34,7 @@ export class Loop {
 
         this.player = new Tone.Player(this.config);
         this.player.sync();
-        console.log('panPos', panPosition);
+        console.log("panPos", panPosition);
         this.connect(new Tone.Panner(panPosition).toDestination());
     }
 

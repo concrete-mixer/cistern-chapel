@@ -1,7 +1,6 @@
-import * as Tone from 'tone';
-import { compileFiles } from './helpers';
-import { LoopManager } from './classes';
-import { defaultFade } from './constants';
+import * as Tone from "tone";
+import { compileFiles } from "./helpers";
+import { LoopManager } from "./classes";
 
 let lm: LoopManager;
 
@@ -26,5 +25,4 @@ export const start = async (): Promise<void> => {
 
 export const stop = (): void => {
     Tone.Transport.stop();
-    setTimeout(() => lm.dispose(), defaultFade * 1000);
 };

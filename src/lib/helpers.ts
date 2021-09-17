@@ -1,6 +1,9 @@
-import { IPackageJson } from 'package-json-type';
-import { OneShot, Loops } from './types';
-import * as _ from 'lodash';
+import { IPackageJson } from "package-json-type";
+import { OneShot, Loops } from "./types";
+import * as _ from "lodash";
+import { Decimal } from "decimal.js-light";
+
+Decimal.set({ rounding: 2 });
 
 export const getNumericChoice = (max: number): number => {
     return Math.floor(Math.random() * max);
@@ -9,9 +12,15 @@ export const getNumericChoice = (max: number): number => {
 export const getBoolChoice = (frequency: number): boolean => {
     // Frequency is how often we want the function to return true. For example if we want
     // the function to return true a quarter of the time we'd specify frequency 0.25
-    const choice = Math.floor(Math.random() * (1 / frequency));
+    // To get the required probablity the frequency gets inverted and multiplied by the random value
+    // After flooring, a zero is considered true and any other integer value is false.
+    if (frequency === 0) {
+        // There's no sensible use case for always returning false, but the logic below supports always true, so to be consistent...
+        return false;
+    }
 
-    return choice === 1 ? true : false;
+    const choice = Math.floor(Math.random() * (1 / frequency));
+    return choice === 0 ? true : false;
 };
 
 export const getPanPositions = (loopsCount: number): number[] => {
@@ -24,13 +33,13 @@ export const getPanPositions = (loopsCount: number): number[] => {
         return [0];
     }
 
-    const increment = 2 / (loopsCount - 1);
+    const increment = new Decimal(2 / (loopsCount - 1));
     const panPositions: number[] = [];
-    let cursor = -1;
+    let cursor = new Decimal(-1);
 
     for (let i = 0; i < loopsCount; i++) {
-        panPositions.push(cursor);
-        cursor += increment;
+        panPositions.push(cursor.toDecimalPlaces(4).toNumber());
+        cursor = cursor.plus(increment);
     }
 
     return panPositions;
@@ -45,7 +54,7 @@ const oneShot: OneShot = {
 
 export const getLoops = (): Loops => {
     if (loops.length === 0) {
-        throw Error('No loop files available');
+        throw Error("No loop files available");
     }
 
     // Return shuffled list of files to make selecting files to use easier
@@ -56,7 +65,7 @@ export const compileFiles = async (): Promise<void> => {
     // Build a list of audio files structured for random selection
     let manifest: IPackageJson;
 
-    await fetch('./manifest.json')
+    await fetch("./manifest.json")
         .then((response) => response.json())
         .then((obj) => (manifest = obj));
 
