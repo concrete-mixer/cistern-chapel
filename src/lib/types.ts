@@ -1,4 +1,4 @@
-export interface OneShot {
+export interface OneShots {
     instrumental: string[];
     concrete: string[];
 }

@@ -1,1 +1,4 @@
-Class up Player
+- Follow this and test classes: https://stackoverflow.com/questions/55272123/testing-a-library-that-uses-the-web-audio-api-with-mocha-chai
+- Could OneShotManger and LoopsManager be the same class, given how much code they seem to share?
+- Handle fading out loops and generating new ones?
+- Implement effects

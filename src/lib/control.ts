@@ -1,8 +1,8 @@
 import * as Tone from "tone";
 import { compileFiles } from "./helpers";
-import { LoopManager } from "./classes";
+import { CCManager } from "./classes";
 
-let lm: LoopManager;
+let ccm: CCManager;
 
 export const start = async (): Promise<void> => {
     // Need this to determine what audio files we can use
@@ -14,12 +14,12 @@ export const start = async (): Promise<void> => {
     Tone.start();
 
     // Create loop
-    if (!lm) {
-        lm = new LoopManager();
+    if (!ccm) {
+        ccm = new CCManager();
     } else {
-        lm.respawn();
+        ccm.respawn();
     }
-
+    Tone.Transport.bpm.value = 90;
     Tone.Transport.start();
 };
 

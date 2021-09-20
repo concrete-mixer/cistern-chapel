@@ -1,10 +1,10 @@
-import * as helpers from "../src/lib/helpers";
+import * as helpers from "./helpers";
 
 describe("helpers.testNumericChoice", () => {
     // This function returns random integers within a range, so the main thing to
     // test is that returned numbers aren't out of bounds
-    test(`within bounds for max up to 1000`, () => {
-        for (let i = 1; i < 1000; i++) {
+    test("within bounds for max up to 100", () => {
+        for (let i = 1; i < 100; i++) {
             const result = helpers.getNumericChoice(i);
             expect(result).toBeGreaterThanOrEqual(0);
             expect(result).toBeLessThanOrEqual(i);
@@ -19,6 +19,9 @@ describe("helpers.getBoolChoice", () => {
 
     test("returns false on 0", () => {
         expect(helpers.getBoolChoice(0)).toBe(false);
+    });
+    test("throws errors on > 1", () => {
+        expect(() => helpers.getBoolChoice(1.1)).toThrowError();
     });
 });
 

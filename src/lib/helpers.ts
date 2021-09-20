@@ -1,6 +1,6 @@
-import { IPackageJson } from "package-json-type";
-import { OneShot, Loops } from "./types";
 import * as _ from "lodash";
+import { IPackageJson } from "package-json-type";
+import { OneShots, Loops } from "./types";
 import { Decimal } from "decimal.js-light";
 
 Decimal.set({ rounding: 2 });
@@ -17,6 +17,9 @@ export const getBoolChoice = (frequency: number): boolean => {
     if (frequency === 0) {
         // There's no sensible use case for always returning false, but the logic below supports always true, so to be consistent...
         return false;
+    }
+    if (frequency > 1) {
+        throw new Error("frequency must be value between 0 and 1");
     }
 
     const choice = Math.floor(Math.random() * (1 / frequency));
@@ -45,9 +48,13 @@ export const getPanPositions = (loopsCount: number): number[] => {
     return panPositions;
 };
 
+export const getSinglePanPosition = (): number => {
+    return _.shuffle([-1, 0.5, 0, 0.5, 1])[0];
+};
+
 // Declare our loops and oneShot structures here so we can return if we can cache them
 const loops: Loops = [];
-const oneShot: OneShot = {
+const oneShots: OneShots = {
     instrumental: [],
     concrete: [],
 };
@@ -59,6 +66,11 @@ export const getLoops = (): Loops => {
 
     // Return shuffled list of files to make selecting files to use easier
     return _.shuffle(loops);
+};
+
+export const getOneShots = (): OneShots => {
+    console.log("oneshots", oneShots);
+    return oneShots;
 };
 
 export const compileFiles = async (): Promise<void> => {
@@ -76,9 +88,9 @@ export const compileFiles = async (): Promise<void> => {
             if (f.match(/^audio\/loops/)) {
                 loops.push(f);
             } else if (f.match(/^audio\/oneshot\/instrumental/)) {
-                oneShot.instrumental.push(f);
+                oneShots.instrumental.push(f);
             } else if (f.match(/^audio\/oneshot\/concrete/)) {
-                oneShot.concrete.push(f);
+                oneShots.concrete.push(f);
             } else {
                 console.log(`Unexpected file ${f}`);
             }

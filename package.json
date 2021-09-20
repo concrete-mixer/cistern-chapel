@@ -1,14 +1,13 @@
 {
-  "name": "webpack-demo",
+  "name": "cistern-chapel",
   "version": "1.0.0",
-  "description": "",
+  "description": "Music for Toilets",
   "private": true,
   "scripts": {
     "test": "jest",
     "start": "webpack serve",
     "build": "webpack",
-    "lint": "eslint '*/**/*.{js,ts,tsx}' --quiet --fix",
-    "dev": "npm-run-all test start"
+    "lint": "eslint '*/**/*.{js,ts,tsx}' --quiet --fix"
   },
   "keywords": [],
   "author": "",
