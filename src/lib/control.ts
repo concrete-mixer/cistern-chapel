@@ -17,12 +17,13 @@ export const start = async (): Promise<void> => {
     if (!ccm) {
         ccm = new CCManager();
     } else {
-        ccm.respawn();
+        ccm.start();
     }
     Tone.Transport.bpm.value = 90;
     Tone.Transport.start();
 };
 
 export const stop = (): void => {
+    ccm.stop();
     Tone.Transport.stop();
 };

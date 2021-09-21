@@ -36,9 +36,9 @@ export const getPanPositions = (loopsCount: number): number[] => {
         return [0];
     }
 
-    const increment = new Decimal(2 / (loopsCount - 1));
+    const increment = new Decimal(1.5 / (loopsCount - 1));
     const panPositions: number[] = [];
-    let cursor = new Decimal(-1);
+    let cursor = new Decimal(-0.75);
 
     for (let i = 0; i < loopsCount; i++) {
         panPositions.push(cursor.toDecimalPlaces(4).toNumber());
