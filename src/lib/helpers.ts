@@ -2,6 +2,8 @@ import * as _ from "lodash";
 import { IPackageJson } from "package-json-type";
 import { OneShots, Loops } from "./types";
 import { Decimal } from "decimal.js-light";
+import * as Tone from "tone";
+import { ToneAudioBuffersUrlMap } from "tone/build/esm/core/context/ToneAudioBuffers";
 
 Decimal.set({ rounding: 2 });
 
@@ -53,27 +55,58 @@ export const getSinglePanPosition = (): number => {
 };
 
 // Declare our loops and oneShot structures here so we can return if we can cache them
-const loops: Loops = [];
-const oneShots: OneShots = {
-    instrumental: [],
-    concrete: [],
+// const loops: Loops = [];
+// const oneShots: OneShots = {
+//     instrumental: [],
+//     concrete: [],
+// };
+
+let loopBuffers: Tone.ToneAudioBuffers;
+let concreteBuffers: Tone.ToneAudioBuffers;
+let instrumentalBuffers: Tone.ToneAudioBuffers;
+
+const loopMap: ToneAudioBuffersUrlMap = {};
+const concreteMap: ToneAudioBuffersUrlMap = {};
+const instrumentalMap: ToneAudioBuffersUrlMap = {};
+
+let loopBuffersReady = false;
+let concreteBuffersReady = false;
+let instrumentalBuffersReady = false;
+
+export const areWeReady = (): boolean => {
+    return loopBuffersReady && concreteBuffersReady && instrumentalBuffersReady;
 };
 
-export const getLoops = (): Loops => {
-    if (loops.length === 0) {
-        throw Error("No loop files available");
-    }
+interface LoopBuffers {
+    loopBuffers: Tone.ToneAudioBuffers;
+    loopMap: ToneAudioBuffersUrlMap;
+}
 
-    // Return shuffled list of files to make selecting files to use easier
-    return _.shuffle(loops);
+export const getLoopData = (): LoopBuffers => {
+    return { loopBuffers, loopMap };
 };
 
-export const getOneShots = (): OneShots => {
-    console.log("oneshots", oneShots);
-    return oneShots;
+interface OneShotBuffers {
+    concreteBuffers: Tone.ToneAudioBuffers;
+    concreteMap: ToneAudioBuffersUrlMap;
+    instrumentalBuffers: Tone.ToneAudioBuffers;
+    instrumentalMap: ToneAudioBuffersUrlMap;
+}
+
+export const getOneShotData = (): OneShotBuffers => {
+    return { concreteBuffers, concreteMap, instrumentalBuffers, instrumentalMap };
 };
 
-export const compileFiles = async (): Promise<void> => {
+interface ConcreteBuffers {
+    concreteBuffers: Tone.ToneAudioBuffers;
+    concreteMap: ToneAudioBuffersUrlMap;
+}
+
+export const getConcreteBuffers = (): ConcreteBuffers => {
+    return { concreteBuffers, concreteMap };
+};
+
+export const compileBuffers = async (): Promise<void> => {
     // Build a list of audio files structured for random selection
     let manifest: IPackageJson;
 
@@ -86,14 +119,36 @@ export const compileFiles = async (): Promise<void> => {
     for (const f of files) {
         if (f.match(/^audio\/*/)) {
             if (f.match(/^audio\/loops/)) {
-                loops.push(f);
+                loopMap[f] = f;
             } else if (f.match(/^audio\/oneshot\/instrumental/)) {
-                oneShots.instrumental.push(f);
+                instrumentalMap[f] = f;
             } else if (f.match(/^audio\/oneshot\/concrete/)) {
-                oneShots.concrete.push(f);
+                concreteMap[f] = f;
             } else {
                 console.log(`Unexpected file ${f}`);
             }
         }
     }
+
+    loopBuffers = new Tone.ToneAudioBuffers({
+        urls: loopMap,
+        onload: () => {
+            console.log("loaded loop buffers");
+            loopBuffersReady = true;
+        },
+    });
+    instrumentalBuffers = new Tone.ToneAudioBuffers({
+        urls: instrumentalMap,
+        onload: () => {
+            console.log("loaded instrumental buffers");
+            instrumentalBuffersReady = true;
+        },
+    });
+    concreteBuffers = new Tone.ToneAudioBuffers({
+        urls: concreteMap,
+        onload: () => {
+            console.log("loaded concrete buffers");
+            concreteBuffersReady = true;
+        },
+    });
 };

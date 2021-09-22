@@ -1,4 +1,3 @@
 - Follow this and test classes: https://stackoverflow.com/questions/55272123/testing-a-library-that-uses-the-web-audio-api-with-mocha-chai
-- Could OneShotManger and LoopsManager be the same class, given how much code they seem to share?
-- Handle fading out loops and generating new ones?
-- Implement effects
+- Work on performance or don't use Freeverb
+- Rather than instantiating new players, load players at start, and cycle effects and buffers
