@@ -1,4 +1,4 @@
-import { defaultFade } from "./constants";
+import { loopFade, reverseProbability } from "./constants";
 import {
     getBoolChoice,
     getLoopData,
@@ -31,8 +31,12 @@ export class Effect {
 export class PingPongDelay extends Effect {
     constructor() {
         // We add 1 because numeric choice can be 0
-        const delayTime = _.random(0.01, 1);
-        const pingPongDelay = new Tone.PingPongDelay({ delayTime, wet: 0.2, feedback: 0.2 });
+        const delayTime = _.random(0.4, 1, true);
+        const pingPongDelay = new Tone.PingPongDelay({
+            delayTime,
+            wet: _.random(0.2, 0.4, true),
+            feedback: _.random(0.2, 0.4, true),
+        });
         super(pingPongDelay);
     }
 }
@@ -41,8 +45,8 @@ export class FilterDelay extends Effect {
     delay: Tone.FeedbackDelay;
     constructor() {
         // We add 1 because numeric choice can be 0
-        const delayTime = _.random(0.01, 1);
-        const delay = new Tone.FeedbackDelay({ delayTime, feedback: _.random(0.2, 0.6) });
+        const delayTime = _.random(0.01, 1, true);
+        const delay = new Tone.FeedbackDelay({ delayTime, feedback: _.random(0.2, 0.6, true) });
         const filterFreq = _.random(100, 400, true);
         const autoFilter = new Tone.AutoWah(filterFreq, 3).connect(delay);
         super(autoFilter);
@@ -59,10 +63,17 @@ export class FilterDelay extends Effect {
     }
 }
 
+export class PitchShift extends Effect {
+    constructor() {
+        const shiftAmount = _.random(-12, 12);
+        super(new Tone.PitchShift(shiftAmount));
+    }
+}
+
 export class Reverb extends Effect {
-    constructor(node: ToneAudioNode) {
+    constructor() {
         const reverb = new Tone.Freeverb(
-            _.random(0.001, 1, true), // Room size 0 - 1
+            _.random(0.01, 1, true), // Room size 0 - 1
             _.random(200, 4000, true), // Dampening frequency, 0hz - 99khz
         );
         super(reverb);
@@ -77,7 +88,7 @@ export class CCPlayer {
         reverse: false,
         volume: -6, // Keep it fairly quiet
         fadeIn: 0.25,
-        fadeOut: 0.5,
+        fadeOut: 0.25,
     };
     player: Tone.Player;
     panPosition: number;
@@ -96,17 +107,32 @@ export class CCPlayer {
     }
 
     playNew(buffer: Tone.ToneAudioBuffer, effect: Effect, panPosition: number): void {
-        console.log("hunk");
         this.player.buffer = buffer;
-        this.effect.dispose();
-        this.panner.dispose();
+
+        if (this.effect) {
+            this.effect.dispose();
+        }
+
         this.effect = effect;
 
+        if (this.panner) {
+            this.panner.dispose();
+        }
+
         this.panner = new Tone.Panner(panPosition);
+
         this.effect.connect();
         this.panner.connect(this.effect.connectNode);
         this.player.connect(this.panner);
+        this.player.set({ reverse: getBoolChoice(reverseProbability) });
         this.player.start();
+
+        // Set time to mark player stopped, adding a 3 second buffer for effect tails
+        const transportTimeToRun = Tone.Transport.now() + this.player.buffer.duration + 3;
+
+        Tone.Transport.scheduleOnce(() => {
+            this.player.stop();
+        }, transportTimeToRun);
     }
 
     dispose(): void {
@@ -122,8 +148,8 @@ export class Loop extends CCPlayer {
     constructor(panPosition: number) {
         super({
             loop: true,
-            fadeIn: defaultFade,
-            fadeOut: defaultFade,
+            fadeIn: loopFade,
+            fadeOut: loopFade,
             volume: -12,
         });
         this.panner = new Tone.Panner(panPosition);
@@ -135,26 +161,27 @@ export class Loop extends CCPlayer {
         if (this.effect) {
             this.effect.dispose();
         }
+
         this.effect = effect;
-        console.log("connecting");
+
         // Connect components together
         this.player.connect(this.panner);
         this.panner.connect(this.effect.connectNode);
         this.effect.connect();
 
+        this.player.set({ reverse: getBoolChoice(reverseProbability) });
         this.player.start();
     }
 
     playNew(buffer: Tone.ToneAudioBuffer, effect: Effect): void {
         this.player.stop();
-        // Tone.Transport.scheduleOnce((time) => {
-        //     console.log("yoohoo");
-        //     this.play(buffer, effect, panPosition);
-        // }, defaultFade);
 
-        // TODO: Tone.Transport.scheduleOnce() isn't getting called (may be an issue with defaultFade value?)
-        // Using setTimeout() for now
-        setTimeout(() => this.play(buffer, effect), defaultFade * 1001);
+        // Set time to mark player stopped, adding a 3 second buffer for effect tails
+        const transportTimeToRun = Tone.Transport.now() + loopFade + 3;
+
+        Tone.Transport.scheduleOnce((time) => {
+            this.play(buffer, effect);
+        }, transportTimeToRun);
     }
 }
 
@@ -166,35 +193,35 @@ export class OneShot extends CCPlayer {
 
 class Manager {
     stopPressed = false;
+    buffers: Tone.ToneAudioBuffers;
+    buffersMap: ToneAudioBuffersUrlMap;
 }
 
 export class LoopManager extends Manager {
     loopsCount = 2;
-    loopBuffers: Tone.ToneAudioBuffers;
-    loopMap: ToneAudioBuffersUrlMap;
     panPositions = getPanPositions(this.loopsCount);
-    loops: Loop[] = [new Loop(this.panPositions[0]), new Loop(this.panPositions[1])];
+    players: Loop[];
 
     constructor() {
         super();
         const { loopBuffers, loopMap } = getLoopData();
-        this.loopBuffers = loopBuffers;
-        this.loopMap = loopMap;
+        this.buffers = loopBuffers;
+        this.buffersMap = loopMap;
         this.initialise();
     }
 
     initialise(): void {
         const { loopBuffers, loopMap } = getLoopData();
-        this.loopBuffers = loopBuffers;
-        this.loopMap = loopMap;
-        const keys = _.shuffle(Object.keys(this.loopMap));
+        this.buffers = loopBuffers;
+        this.buffersMap = loopMap;
+        const keys = _.shuffle(Object.keys(this.buffersMap));
+        this.players = [new Loop(this.panPositions[0]), new Loop(this.panPositions[1])];
 
         // Need to assign different files
-        for (let i = 0; i < this.loops.length; i++) {
-            console.log("Playing", keys[i]);
-            this.loops[i].play(loopBuffers.get(keys[i]), this.getEffect());
+        for (let i = 0; i < this.players.length; i++) {
+            this.players[i].play(loopBuffers.get(keys[i]), this.getEffect());
         }
-        Tone.Transport.scheduleRepeat((time) => this.loopChoice(), 20, 20);
+        Tone.Transport.scheduleRepeat((time) => this.makeChoice(), 20, 20);
     }
 
     getEffect(): Effect {
@@ -210,70 +237,84 @@ export class LoopManager extends Manager {
         }
     }
 
-    loopChoice(): void {
+    makeChoice(): void {
         const changeLoop = getBoolChoice(0.5);
+
         if (!this.stopPressed && changeLoop) {
             // Play a new loop file
-            console.log("before", this.loops);
-            const loop = this.loops.shift();
-            const keyToPlay = _.shuffle(Object.keys(this.loopMap))[0];
 
-            loop.playNew(this.loopBuffers.get(keyToPlay), this.getEffect());
-            this.loops.push(loop);
-            // Dispose after fadeout time
-            console.log("Changing loop", keyToPlay);
+            // Get some things
+            // Pop off oldest playing loop
+            const loop = this.players.shift();
+            const keyToPlay = _.shuffle(Object.keys(this.buffersMap))[0];
+
+            // Make it happen
+            loop.playNew(this.buffers.get(keyToPlay), this.getEffect());
+
+            // Push to the bottom of pile
+            this.players.push(loop);
         }
     }
 
     dispose(): void {
         this.stopPressed = true;
-        this.loops = [];
+        this.players = [];
         this.reset();
     }
 
     reset(): void {
-        this.loops.forEach((loop) => loop.dispose());
+        this.players.forEach((player) => player.dispose());
         this.stopPressed = false;
     }
 }
 
 export class OneShotManager extends Manager {
-    instrumentalBuffers: Tone.ToneAudioBuffers;
-    instrumentalMap: ToneAudioBuffersUrlMap;
-    concreteBuffers: Tone.ToneAudioBuffers;
-    concreteMap: ToneAudioBuffersUrlMap;
-    freePlayers: OneShot[];
-    activePlayers: OneShot[];
+    players: OneShot[] = [new OneShot(), new OneShot()];
 
-    constructor() {
+    constructor(buffers: Tone.ToneAudioBuffers, buffersMap: ToneAudioBuffersUrlMap) {
         super();
-        const { concreteBuffers, concreteMap, instrumentalBuffers, instrumentalMap } = getOneShotData();
-        this.concreteBuffers = concreteBuffers;
-        this.concreteMap = concreteMap;
-        this.instrumentalBuffers = instrumentalBuffers;
-        this.instrumentalMap = instrumentalMap;
+        this.buffers = buffers;
+        this.buffersMap = buffersMap;
         this.initialise();
     }
 
     initialise(): void {
-        this.freePlayers = [new OneShot(), new OneShot()];
-        Tone.Transport.scheduleOnce(() => {
-            Tone.Transport.scheduleRepeat(() => {
-                this.oneShotChoice(this.concreteBuffers, this.concreteMap);
-            }, "1n");
-            Tone.Transport.scheduleRepeat(() => {
-                this.oneShotChoice(this.instrumentalBuffers, this.instrumentalMap);
-            }, 2); // Offset instrumentals from concrete samples
-        }, 10);
+        Tone.Transport.scheduleRepeat(
+            () => {
+                this.makeChoice();
+            },
+            2,
+            10,
+        ); // Offset instrumentals from concrete samples
     }
 
-    oneShotChoice(buffers: Tone.ToneAudioBuffers, map: ToneAudioBuffersUrlMap): void {
-        if (!this.stopPressed && getBoolChoice(0.25) && this.freePlayers.length > 0) {
-            const key = _.shuffle(Object.keys(map))[0];
-            const oneShot = this.freePlayers.pop();
-            this.activePlayers.push(oneShot);
-            oneShot.playNew(buffers.get(key), this.getEffect(), getSinglePanPosition());
+    makeChoice(): void {
+        // Jump through some hoops
+        if (this.stopPressed) {
+            return;
         }
+
+        const playerIndex = this.getAvailablePlayerIndex();
+
+        if (playerIndex === -1) {
+            return;
+        }
+
+        if (getBoolChoice(0.25)) {
+            const player = this.players[playerIndex];
+            const keyToPlay = _.shuffle(Object.keys(this.buffersMap))[0];
+            player.playNew(this.buffers.get(keyToPlay), this.getEffect(), getSinglePanPosition());
+        }
+    }
+
+    getAvailablePlayerIndex(): number {
+        // Find the index of the first player found that is not currently playing anything
+        for (let i = 0; i < this.players.length; i++) {
+            if (this.players[i].player.state === "stopped") {
+                return i;
+            }
+        }
+        return -1; // As per Array.indexOf() an index of -1 will be interpreted as not found
     }
 
     getEffect(): Effect {
@@ -285,7 +326,9 @@ export class OneShotManager extends Manager {
             case 1:
                 return new FilterDelay();
             // case 2:
-            //     return new = new Reverb(this.panner);
+            //     return new Reverb();
+            case 2:
+                return new PitchShift();
             default:
                 console.log("Hmm, shouldn't get here?");
         }
@@ -306,21 +349,43 @@ export class OneShotManager extends Manager {
 
 export class CCManager {
     loopManager: LoopManager;
-    // oneShotManager: OneShotManager;
+    concreteManager: OneShotManager;
+    instrumentalManager: OneShotManager;
 
     constructor() {
+        // Initialise our children. Fly, my pretties!
         this.loopManager = new LoopManager();
-        // this.oneShotManager = new OneShotManager();
+        const { concreteBuffers, concreteMap, instrumentalBuffers, instrumentalMap } = getOneShotData();
+
+        this.concreteManager = new OneShotManager(concreteBuffers, concreteMap);
+        this.instrumentalManager = new OneShotManager(instrumentalBuffers, instrumentalMap);
+
+        const grain = new Tone.GrainPlayer({
+            url: "/audio/oneshot/instrumental/trumpet/1094_trumpet_079_2_5_1.mp3.mp3",
+            playbackRate: 0.1,
+            grainSize: 0.02,
+            overlap: 0.7,
+            loop: true,
+            volume: -18,
+            loopStart: 0,
+            mute: false,
+            reverse: true,
+            detune: -700,
+        })
+            .toDestination()
+            .start(5);
     }
 
     start(): void {
         // We've played, then we've stopped, now we're playing again. First dispose of pre-existing loops then recompile loops
         this.loopManager.initialise();
-        // this.oneShotManager.initialise();
+        this.concreteManager.initialise();
+        this.instrumentalManager.initialise();
     }
 
     stop(): void {
         this.loopManager.dispose();
-        // this.oneShotManager.dispose();
+        this.concreteManager.dispose();
+        this.instrumentalManager.dispose();
     }
 }
