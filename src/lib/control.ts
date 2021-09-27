@@ -4,7 +4,7 @@ import { CCManager } from "./classes";
 
 let ccm: CCManager;
 
-export const start = async (): Promise<void> => {
+export const start = async (callback: () => void): Promise<void> => {
     // Need this to determine what audio files we can use
     if (!areWeReady()) {
         compileBuffers();
@@ -26,6 +26,9 @@ export const start = async (): Promise<void> => {
             }
             Tone.Transport.bpm.value = 90;
             Tone.Transport.start();
+
+            // Invoke the callback
+            callback();
         }
     }, 50);
 };
