@@ -9,7 +9,8 @@ import {
 } from "./helpers";
 import * as Tone from "tone";
 import { PlayerOptions, ToneAudioNode } from "tone/build/esm";
-import * as _ from "lodash";
+import shuffle from "lodash.shuffle";
+import random from "lodash.random";
 import { ToneAudioBuffersUrlMap } from "tone/build/esm/core/context/ToneAudioBuffers";
 
 export class Effect {
@@ -31,11 +32,11 @@ export class Effect {
 export class PingPongDelay extends Effect {
     constructor() {
         // We add 1 because numeric choice can be 0
-        const delayTime = _.random(0.4, 1, true);
+        const delayTime = random(0.4, 1, true);
         const pingPongDelay = new Tone.PingPongDelay({
             delayTime,
-            wet: _.random(0.2, 0.4, true),
-            feedback: _.random(0.2, 0.4, true),
+            wet: random(0.2, 0.4, true),
+            feedback: random(0.2, 0.4, true),
         });
         super(pingPongDelay);
     }
@@ -45,9 +46,9 @@ export class FilterDelay extends Effect {
     delay: Tone.FeedbackDelay;
     constructor() {
         // We add 1 because numeric choice can be 0
-        const delayTime = _.random(0.01, 1, true);
-        const delay = new Tone.FeedbackDelay({ delayTime, feedback: _.random(0.2, 0.6, true) });
-        const filterFreq = _.random(100, 400, true);
+        const delayTime = random(0.01, 1, true);
+        const delay = new Tone.FeedbackDelay({ delayTime, feedback: random(0.2, 0.6, true) });
+        const filterFreq = random(100, 400, true);
         const autoFilter = new Tone.AutoWah(filterFreq, 3).connect(delay);
         super(autoFilter);
         this.delay = delay;
@@ -65,7 +66,7 @@ export class FilterDelay extends Effect {
 
 export class PitchShift extends Effect {
     constructor() {
-        const shiftAmount = _.random(-12, 12);
+        const shiftAmount = random(-12, 12);
         super(new Tone.PitchShift(shiftAmount));
     }
 }
@@ -73,8 +74,8 @@ export class PitchShift extends Effect {
 export class Reverb extends Effect {
     constructor() {
         const reverb = new Tone.Freeverb(
-            _.random(0.01, 1, true), // Room size 0 - 1
-            _.random(200, 4000, true), // Dampening frequency, 0hz - 99khz
+            random(0.01, 1, true), // Room size 0 - 1
+            random(200, 4000, true), // Dampening frequency, 0hz - 99khz
         );
         super(reverb);
     }
@@ -214,7 +215,7 @@ export class LoopManager extends Manager {
         const { loopBuffers, loopMap } = getLoopData();
         this.buffers = loopBuffers;
         this.buffersMap = loopMap;
-        const keys = _.shuffle(Object.keys(this.buffersMap));
+        const keys = shuffle(Object.keys(this.buffersMap));
         this.players = [new Loop(this.panPositions[0]), new Loop(this.panPositions[1])];
 
         // Need to assign different files
@@ -246,7 +247,7 @@ export class LoopManager extends Manager {
             // Get some things
             // Pop off oldest playing loop
             const loop = this.players.shift();
-            const keyToPlay = _.shuffle(Object.keys(this.buffersMap))[0];
+            const keyToPlay = shuffle(Object.keys(this.buffersMap))[0];
 
             // Make it happen
             loop.playNew(this.buffers.get(keyToPlay), this.getEffect());
@@ -302,7 +303,7 @@ export class OneShotManager extends Manager {
 
         if (getBoolChoice(0.25)) {
             const player = this.players[playerIndex];
-            const keyToPlay = _.shuffle(Object.keys(this.buffersMap))[0];
+            const keyToPlay = shuffle(Object.keys(this.buffersMap))[0];
             player.playNew(this.buffers.get(keyToPlay), this.getEffect(), getSinglePanPosition());
         }
     }

@@ -3,8 +3,8 @@
 h1 {
     font-family: "Byzantine-Normal";
     font-size: 60px;
-    line-height: 1.2;
-    margin: 0 auto 20px;
+    line-height: 1;
+    margin: 0 auto 40px;
 }
 
 .backgroundWrapper {
@@ -70,6 +70,7 @@ button {
     cursor: pointer;
     font-size: 16px;
     font-weight: bold;
+    margin-top: 20px;
 }
 
 button:disabled {

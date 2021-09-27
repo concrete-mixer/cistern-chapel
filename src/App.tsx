@@ -10,7 +10,7 @@ const App: React.FC = (): React.ReactElement => {
                 <div className={styles.boxWrapper}>
                     <div className={styles.box}>
                         <h1>Welcome to the Cistern Chapel</h1>
-                        <p>You can join us in aural communion by click the &quot;Play audio&quot; button below.</p>
+                        <p>You can join us in aural communion by clicking the &quot;Play audio&quot; button below.</p>
                         {playerState === "stopped" && (
                             <button
                                 onClick={() => {
@@ -35,8 +35,8 @@ const App: React.FC = (): React.ReactElement => {
                         <div className={styles.explanation}>
                             <h2>Explanation</h2>
                             <p>
-                                This is a web-based implementation of Flush Tones, an as-yet unrealised art installation
-                                concept.
+                                This is a web-based implementation of Flush Tones, an as-yet unrealised sound art
+                                installation.
                             </p>
                             <p>
                                 The idea is to make public toilets less intimidating by filling them up with strange
@@ -47,8 +47,8 @@ const App: React.FC = (): React.ReactElement => {
                             </p>
                             <p>
                                 So far I&apos;ve had trouble finding a bathroom with power sockets to install speakers
-                                in. One day, maybe. For now, punters can commune with the Cistern Chapel using their
-                                smart phones.
+                                in. Or finding an organisation willing to have their bathrooms haunted. One day, maybe.
+                                For now, punters can commune with the Cistern Chapel using their smart phones.
                             </p>
                             <p>Plop.</p>
                         </div>

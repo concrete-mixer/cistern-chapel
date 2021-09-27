@@ -1,6 +1,5 @@
-import * as _ from "lodash";
+import shuffle from "lodash.shuffle";
 import { IPackageJson } from "package-json-type";
-import { OneShots, Loops } from "./types";
 import { Decimal } from "decimal.js-light";
 import * as Tone from "tone";
 import { ToneAudioBuffersUrlMap } from "tone/build/esm/core/context/ToneAudioBuffers";
@@ -51,7 +50,7 @@ export const getPanPositions = (loopsCount: number): number[] => {
 };
 
 export const getSinglePanPosition = (): number => {
-    return _.shuffle([-1, 0.5, 0, 0.5, 1])[0];
+    return shuffle([-1, 0.5, 0, 0.5, 1])[0];
 };
 
 // Declare our loops and oneShot structures here so we can return if we can cache them
