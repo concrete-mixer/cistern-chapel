@@ -1,8 +1,0 @@
-- Follow this and test classes: https://stackoverflow.com/questions/55272123/testing-a-library-that-uses-the-web-audio-api-with-mocha-chai
-- Get oneshot scheduling working. This involves:
-    - having just one Tone.Transport.scheduleRepeat() (only one seems to be supported at a time, or at least, the last one called seems to be the only one running).
-    - implement a concurrency limit for oneshot buffers. Maybe two for instruments (sometimes nice to have collisions) and one for concrete?
-    - Proposed lifecycle:
-        - Next time oneShotChoice() called, as part of determining if we should do something, check if all players are currently in use (if so, we'd do nothing)
-        - If there's a player free, and we've decided to play a new oneshot, pick a buffer, get its duration, store the transport time we'd expect it to be done by, for future checking.
-- Freeverb seemed to be affecting performance. Try again after buffer rework

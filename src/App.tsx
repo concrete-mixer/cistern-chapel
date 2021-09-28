@@ -48,7 +48,7 @@ const App: React.FC = (): React.ReactElement => {
                             <p>
                                 So far I&apos;ve had trouble finding a bathroom with power sockets to install speakers
                                 in. Or finding an organisation willing to have their bathrooms haunted. One day, maybe.
-                                For now, punters can commune with the Cistern Chapel using their smart phones.
+                                For now, punters can meditate in the Cistern Chapel with smartphones and earphones.
                             </p>
                             <p>Plop.</p>
                         </div>

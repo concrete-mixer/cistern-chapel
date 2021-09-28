@@ -1,12 +1,5 @@
-import { loopFade, reverseProbability } from "./constants";
-import {
-    getBoolChoice,
-    getLoopData,
-    getOneShotData,
-    getNumericChoice,
-    getPanPositions,
-    getSinglePanPosition,
-} from "./helpers";
+import { loopFade, reverseProbability, loopVolume, concreteVolume, instrumentalVolume } from "./constants";
+import { getBoolChoice, getBufferMapData, getNumericChoice, getPanPositions, getSinglePanPosition } from "./helpers";
 import * as Tone from "tone";
 import { PlayerOptions, ToneAudioNode } from "tone/build/esm";
 import shuffle from "lodash.shuffle";
@@ -48,7 +41,7 @@ export class FilterDelay extends Effect {
         // We add 1 because numeric choice can be 0
         const delayTime = random(0.01, 1, true);
         const delay = new Tone.FeedbackDelay({ delayTime, feedback: random(0.2, 0.6, true) });
-        const filterFreq = random(100, 400, true);
+        const filterFreq = random(400, 800, true);
         const autoFilter = new Tone.AutoWah(filterFreq, 3).connect(delay);
         super(autoFilter);
         this.delay = delay;
@@ -91,7 +84,7 @@ export class CCPlayer {
         fadeIn: 0.25,
         fadeOut: 0.25,
     };
-    player: Tone.Player;
+    player: Tone.Player | Tone.GrainPlayer;
     panPosition: number;
     panner: Tone.Panner;
     effect: Effect;
@@ -143,7 +136,7 @@ export class CCPlayer {
     }
 }
 
-export class Loop extends CCPlayer {
+export class LoopPlayer extends CCPlayer {
     panPosition: number;
 
     constructor(panPosition: number) {
@@ -151,7 +144,7 @@ export class Loop extends CCPlayer {
             loop: true,
             fadeIn: loopFade,
             fadeOut: loopFade,
-            volume: -12,
+            volume: loopVolume,
         });
         this.panner = new Tone.Panner(panPosition);
     }
@@ -186,41 +179,76 @@ export class Loop extends CCPlayer {
     }
 }
 
-export class OneShot extends CCPlayer {
-    constructor() {
-        super();
+export class OneShotPlayer extends CCPlayer {
+    constructor(volume: number) {
+        super({ volume });
     }
 }
 
-class Manager {
+export class DronePlayer extends LoopPlayer {
+    constructor(panPosition: number) {
+        super(panPosition);
+        this.player = new Tone.GrainPlayer();
+    }
+
+    play(buffer: Tone.ToneAudioBuffer, effect: Effect): void {
+        this.player.buffer = buffer;
+
+        if (this.effect) {
+            this.effect.dispose();
+        }
+
+        this.effect = effect;
+
+        // Connect components together
+        this.player.connect(this.panner);
+        this.panner.connect(this.effect.connectNode);
+        this.effect.connect();
+
+        // Define grainplayer values separately for debugging
+        const data = {
+            playbackRate: random(0.125, 0.3, true),
+            // playbackRate: 1,
+            grainSize: random(0.1, 0.2, true),
+            overlap: random(0.2, 0.8, true),
+            detune: shuffle([-1200, -700, -500, 0])[0],
+            // detune: 2400,
+            loop: true,
+            volume: loopVolume,
+            loopStart: 0,
+            reverse: getBoolChoice(reverseProbability),
+        };
+
+        this.player.set(data);
+        this.player.start();
+    }
+}
+
+class SoundManager {
     stopPressed = false;
     buffers: Tone.ToneAudioBuffers;
     buffersMap: ToneAudioBuffersUrlMap;
 }
 
-export class LoopManager extends Manager {
+export class LoopManager extends SoundManager {
     loopsCount = 2;
     panPositions = getPanPositions(this.loopsCount);
-    players: Loop[];
+    players: LoopPlayer[] | DronePlayer[];
 
-    constructor() {
+    constructor(loopBuffers: Tone.ToneAudioBuffers, loopMap: ToneAudioBuffersUrlMap) {
         super();
-        const { loopBuffers, loopMap } = getLoopData();
         this.buffers = loopBuffers;
         this.buffersMap = loopMap;
         this.initialise();
     }
 
     initialise(): void {
-        const { loopBuffers, loopMap } = getLoopData();
-        this.buffers = loopBuffers;
-        this.buffersMap = loopMap;
         const keys = shuffle(Object.keys(this.buffersMap));
-        this.players = [new Loop(this.panPositions[0]), new Loop(this.panPositions[1])];
+        this.players = [new LoopPlayer(this.panPositions[0]), new LoopPlayer(this.panPositions[1])];
 
         // Need to assign different files
         for (let i = 0; i < this.players.length; i++) {
-            this.players[i].play(loopBuffers.get(keys[i]), this.getEffect());
+            this.players[i].play(this.buffers.get(keys[i]), this.getEffect());
         }
         Tone.Transport.scheduleRepeat((time) => this.makeChoice(), 20, 20);
     }
@@ -234,7 +262,7 @@ export class LoopManager extends Manager {
             case 1:
                 return new FilterDelay();
             default:
-                console.log("Hmm, shouldn't get here?");
+                console.log("Hmm, shouldn't get here.");
         }
     }
 
@@ -269,13 +297,14 @@ export class LoopManager extends Manager {
     }
 }
 
-export class OneShotManager extends Manager {
-    players: OneShot[] = [new OneShot(), new OneShot()];
+export class OneShotManager extends SoundManager {
+    players: OneShotPlayer[];
 
-    constructor(buffers: Tone.ToneAudioBuffers, buffersMap: ToneAudioBuffersUrlMap) {
+    constructor(buffers: Tone.ToneAudioBuffers, buffersMap: ToneAudioBuffersUrlMap, volume: number) {
         super();
         this.buffers = buffers;
         this.buffersMap = buffersMap;
+        this.players = [new OneShotPlayer(volume), new OneShotPlayer(volume)];
         this.initialise();
     }
 
@@ -331,12 +360,11 @@ export class OneShotManager extends Manager {
             case 2:
                 return new PitchShift();
             default:
-                console.log("Hmm, shouldn't get here?");
+                console.log("Hmm, shouldn't get here.");
         }
     }
 
     dispose(): void {
-        console.log("Disposing");
         this.stopPressed = true;
 
         // Tidy up all the oneShots we've got happening
@@ -348,33 +376,37 @@ export class OneShotManager extends Manager {
     }
 }
 
+export class DroneManager extends LoopManager {
+    constructor(buffers: Tone.ToneAudioBuffers, buffersMap: ToneAudioBuffersUrlMap) {
+        super(buffers, buffersMap);
+    }
+
+    initialise(): void {
+        const keys = shuffle(Object.keys(this.buffersMap));
+        this.players = [new DronePlayer(this.panPositions[0]), new DronePlayer(this.panPositions[1])];
+
+        // Need to assign different files
+        for (let i = 0; i < this.players.length; i++) {
+            this.players[i].play(this.buffers.get(keys[i]), this.getEffect());
+        }
+        Tone.Transport.scheduleRepeat((time) => this.makeChoice(), 20, 20);
+    }
+}
+
 export class CCManager {
     loopManager: LoopManager;
     concreteManager: OneShotManager;
     instrumentalManager: OneShotManager;
+    droneManager: DroneManager;
 
     constructor() {
         // Initialise our children. Fly, my pretties!
-        this.loopManager = new LoopManager();
-        const { concreteBuffers, concreteMap, instrumentalBuffers, instrumentalMap } = getOneShotData();
+        const bfm = getBufferMapData();
 
-        this.concreteManager = new OneShotManager(concreteBuffers, concreteMap);
-        this.instrumentalManager = new OneShotManager(instrumentalBuffers, instrumentalMap);
-
-        const grain = new Tone.GrainPlayer({
-            url: "/audio/oneshot/instrumental/trumpet/1094_trumpet_079_2_5_1.mp3.mp3",
-            playbackRate: 0.1,
-            grainSize: 0.02,
-            overlap: 0.7,
-            loop: true,
-            volume: -18,
-            loopStart: 0,
-            mute: false,
-            reverse: true,
-            detune: -700,
-        })
-            .toDestination()
-            .start(5);
+        this.loopManager = new LoopManager(bfm.loopBuffers, bfm.loopMap);
+        this.concreteManager = new OneShotManager(bfm.concreteBuffers, bfm.concreteMap, concreteVolume);
+        this.instrumentalManager = new OneShotManager(bfm.instrumentalBuffers, bfm.instrumentalMap, loopVolume);
+        // this.droneManager = new DroneManager(bfm.droneBuffers, bfm.droneMap);
     }
 
     start(): void {
@@ -382,11 +414,13 @@ export class CCManager {
         this.loopManager.initialise();
         this.concreteManager.initialise();
         this.instrumentalManager.initialise();
+        // this.droneManager.initialise();
     }
 
     stop(): void {
         this.loopManager.dispose();
         this.concreteManager.dispose();
         this.instrumentalManager.dispose();
+        // this.droneManager.dispose();
     }
 }
