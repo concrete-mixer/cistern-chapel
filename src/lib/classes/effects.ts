@@ -43,13 +43,15 @@ export class FilterDelay extends Effect {
         // Determine filter type: fixed vs LFO variable
         // 50/50 chance
         const useLFO = getBoolChoice(0.5);
+
         if (useLFO) {
             const config = {
-                baseFrequency: random(400, 800, true),
+                baseFrequency: random(400, 1600, true),
                 octaves: random(1, 3),
                 wet: 1,
-                frequency: random(0.025, 0.1, true),
+                frequency: random(0.02, 0.07, true),
             };
+            // TODO: remove debug
             console.log("autofilter", config);
             const autoFilter = new Tone.AutoFilter(config).connect(delay).start();
             autoFilter.filter.set({
@@ -61,11 +63,12 @@ export class FilterDelay extends Effect {
             // Fixed filter
             const config = {
                 Q: 0, // Since we might randomly define frequency at a resonant point in sample, let's not risk distortion
-                frequency: random(400, 800, true),
+                frequency: random(400, 2000, true),
                 gain: 0.8, // be careful about resonance at filter point, don't frighten the horses
             };
             const filter = new Tone.Filter(config).connect(delay);
             super(filter);
+            // TODO: remove debug
             console.log("filter", config);
         }
         this.delay = delay;

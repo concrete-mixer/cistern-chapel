@@ -37,15 +37,15 @@ const App: React.FC = (): React.ReactElement => {
                     <div className={styles.explanation}>
                         <h2>Explanation</h2>
                         <p>
-                            This is a web-based implementation of Flush Tones, an as-yet unrealised sound art
-                            installation.
+                            This is a <a href="https://github.com/concrete-mixer/cistern-chapel">web implementation</a>{" "}
+                            of <a href="https://github.com/concrete-mixer/flush-tones">Flush Tones</a>, an as-yet
+                            unrealised sound art installation I&apos;ve had in my head for nearly 25 years.
                         </p>
                         <p>
-                            The idea is to make public toilets less intimidating by filling them up with strange sounds
-                            to mask the real ones. <a href="https://en.wikipedia.org/wiki/Paruresis">Paruresis</a> and{" "}
-                            <a href="https://en.wikipedia.org/wiki/Parcopresis">Parcopresis</a> are real conditions,
-                            people!
+                            The idea is to make public toilets less intimidating by distracting anxious users with
+                            strange sounds to mask the real ones.
                         </p>
+                        <p>I may also be taking the piss. I don&apos;t really know any more.</p>
                         <p>
                             So far I&apos;ve had trouble finding a bathroom with power sockets to install speakers in.
                             Or finding an organisation willing to have their bathrooms haunted. One day, maybe.
