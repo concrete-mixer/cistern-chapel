@@ -64,7 +64,7 @@ export class FilterDelay extends Effect {
                 frequency: random(400, 800, true),
                 gain: 0.8, // be careful about resonance at filter point, don't frighten the horses
             };
-            const filter = new Tone.Filter(config);
+            const filter = new Tone.Filter(config).connect(delay);
             super(filter);
             console.log("filter", config);
         }
