@@ -1,6 +1,6 @@
 import * as Tone from "tone";
 import { compileBuffers, areWeReady } from "./helpers";
-import { CCManager } from "./classes";
+import { CCManager } from "./classes/managers";
 
 let ccm: CCManager;
 
