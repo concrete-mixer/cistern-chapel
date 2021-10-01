@@ -6,6 +6,12 @@
     font-style:normal;
 }
 
+
+body {
+    font-family: sans-serif;
+    background-color: black;
+}
+
 h1 {
     font-family: "Byzantine-Normal";
     font-size: 60px;
@@ -19,32 +25,11 @@ h1 {
     background-repeat: no-repeat;
     background-size: cover;
     background-color: black;
-    font-family: sans-serif;
-    /* display: table-cell; */
+    display: table-cell;
     height: 100%;
     width: 100%;
-}
-
-.backgroundAttribution {
-    position: fixed;
-    bottom: 0px;
-    right: 0px;
-    padding: 10px;
-    color: white;
-    font-size: 12px;
-    background-color: black;
-}
-
-.box {
-    max-width: 620px;
-    min-width: 320px;
-    background-color: #883714;
-    padding: 24px;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    border-radius: 25px;
+    z-index: -1;
+    display: none;
 }
 
 .backgroundShade {
@@ -56,6 +41,20 @@ h1 {
     height: 100%;
 }
 
+.backgroundAttribution {
+    font-size: 12px;
+    display: none;
+}
+
+
+.box {
+    background-color: #883714;
+    padding: 24px;
+    border-radius: 25px;
+    min-width: 280px;
+    max-width: 480px;
+}
+
 body, html {
     margin: 0;
     color: white;
@@ -64,7 +63,7 @@ body, html {
     display: grid;
 }
 
-a:visited {
+a, a:visited {
     color: white;
 }
 
@@ -87,4 +86,24 @@ button:disabled {
 
 .explanation {
     text-align: left;
+}
+
+.boxWrapper {
+    min-height: 100vh; /* minimum height = screen height */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1;
+}
+
+@media screen and (min-height: 720px) {
+    .backgroundAttribution, .backgroundWrapper{
+        display: block;
+    }
+}
+
+@media screen and (min-width: 540px) {
+    .backgroundAttribution, .backgroundWrapper{
+        display: block;
+    }
 }
