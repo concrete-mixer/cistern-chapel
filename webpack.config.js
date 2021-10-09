@@ -35,6 +35,14 @@ module.exports = {
     plugins: [
         new HtmlWebpackPlugin({
             title: "Cistern Chapel",
+            meta: {
+                author: "Concrete Mixer Audio",
+                description: "Cistern Chapel web audio sound art of sorts",
+                "Content-Security-Policy": {
+                    "http-equiv": "Content-Security-Policy",
+                    content: "default-src 'self'; object-src 'none'",
+                },
+            },
         }),
         new CopyPlugin({
             patterns: [{ from: "src/audio", to: "audio" }],
