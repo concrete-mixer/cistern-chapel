@@ -15,6 +15,9 @@ export class CCPlayer {
         volume: -6, // Keep it fairly quiet
         fadeIn: 0.25,
         fadeOut: 0.25,
+        onstop: () => {
+            this.player.stop();
+        },
     };
     player: Tone.Player | Tone.GrainPlayer;
     panPosition: number;
@@ -50,15 +53,8 @@ export class CCPlayer {
         this.effect.connect();
         this.panner.connect(this.effect.connectNode);
         this.player.connect(this.panner);
-        this.player.set({ reverse: getBoolChoice(reverseProbability) });
+        this.player.set({ ...this.config, reverse: getBoolChoice(reverseProbability) });
         this.player.start();
-
-        // Set time to mark player stopped, adding a 3 second buffer for effect tails
-        const transportTimeToRun = Tone.Transport.now() + this.player.buffer.duration + 3;
-
-        Tone.Transport.scheduleOnce(() => {
-            this.player.stop();
-        }, transportTimeToRun);
     }
 
     dispose(): void {
@@ -95,7 +91,7 @@ export class LoopPlayer extends CCPlayer {
         this.panner.connect(this.effect.connectNode);
         this.effect.connect();
 
-        this.player.set({ reverse: getBoolChoice(reverseProbability) });
+        this.player.set({ ...this.config, reverse: getBoolChoice(reverseProbability) });
         this.player.start();
     }
 
@@ -149,6 +145,9 @@ export class DronePlayer extends LoopPlayer {
             volume: loopVolume,
             loopStart: 0,
             reverse: getBoolChoice(reverseProbability),
+            onstop: () => {
+                this.player.stop();
+            },
         };
 
         this.player.set(data);
