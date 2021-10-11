@@ -130,7 +130,7 @@ export class OneShotManager extends SoundManager {
     }
 
     getEffect(): Effect {
-        const choice = getNumericChoice(2);
+        const choice = getNumericChoice(3);
 
         switch (choice) {
             case 0:
