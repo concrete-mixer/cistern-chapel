@@ -62,8 +62,7 @@ export class LoopManager extends SoundManager {
     }
 
     getEffect(): Effects.Effect {
-        let choice = getNumericChoice(4);
-        choice = 3;
+        const choice = getNumericChoice(4);
 
         switch (choice) {
             case 0:
@@ -159,16 +158,13 @@ export class OneShotManager extends SoundManager {
     }
 
     getEffect(): Effects.Effect {
-        let choice = getNumericChoice(5);
-        choice = 4;
+        const choice = getNumericChoice(5);
 
         switch (choice) {
             case 0:
                 return new Effects.PingPongDelay();
             case 1:
                 return new Effects.FilterDelay();
-            // case 2:
-            //     return new Reverb();
             case 2:
                 return new Effects.PitchShift();
             case 3:

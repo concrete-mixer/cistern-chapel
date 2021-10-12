@@ -163,16 +163,6 @@ export class PitchShift extends Effect {
     }
 }
 
-export class Reverb extends Effect {
-    constructor() {
-        const reverb = new Tone.Freeverb(
-            random(0.01, 1, true), // Room size 0 - 1
-            random(200, 4000, true), // Dampening frequency, 0hz - 99khz
-        );
-        super(reverb);
-    }
-}
-
 export class DoubleDelay extends Effect {
     delay1: Tone.FeedbackDelay;
     delay2: Tone.FeedbackDelay;
@@ -244,7 +234,7 @@ export class RandDelay extends Effect {
         const maxDelay = random(0.1, 1);
         // We add 1 because numeric choice can be 0
         const delay = new Tone.PingPongDelay({
-            delayTime: random(0.1, 1),
+            delayTime: random(0.1, 1, true),
             wet: random(0.2, 0.4, true),
             feedback: random(0.2, 0.4, true),
             maxDelay: maxDelay,
