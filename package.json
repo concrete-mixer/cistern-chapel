@@ -16,8 +16,11 @@
     "@types/jest": "^27.0.1",
     "@types/lodash.random": "^3.2.6",
     "@types/lodash.shuffle": "^4.2.6",
+    "@types/lodash.without": "^4.4.6",
     "@types/react": "^17.0.21",
     "@types/react-dom": "^17.0.9",
+    "@typescript-eslint/eslint-plugin": "^4.31.1",
+    "@typescript-eslint/parser": "^4.31.1",
     "copy-webpack-plugin": "^9.0.1",
     "html-webpack-plugin": "^5.3.2",
     "mini-css-extract-plugin": "^2.3.0",
@@ -30,8 +33,6 @@
     "webpack-manifest-plugin": "^4.0.2"
   },
   "dependencies": {
-    "@typescript-eslint/eslint-plugin": "^4.31.1",
-    "@typescript-eslint/parser": "^4.31.1",
     "css-loader": "^6.3.0",
     "decimal.js-light": "^2.5.1",
     "eslint": "^7.32.0",
@@ -40,6 +41,7 @@
     "eslint-plugin-react": "^7.25.1",
     "lodash.random": "^3.2.0",
     "lodash.shuffle": "^4.2.0",
+    "lodash.without": "^4.4.0",
     "package-json-type": "^1.0.3",
     "prettier": "^2.4.0",
     "react": "^17.0.2",

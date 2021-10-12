@@ -1,7 +1,7 @@
 import { AutoFilterOptions, FilterOptions, ToneAudioNode } from "tone/build/esm";
 import random from "lodash.random";
 import * as Tone from "tone";
-import { getBoolChoice, getNumericChoice } from "../helpers";
+import { getBoolChoice, getNumericChoice, getPanPositions } from "../helpers";
 
 export class Effect {
     connectNode: ToneAudioNode;
@@ -30,12 +30,6 @@ export class PingPongDelay extends Effect {
         });
         super(pingPongDelay);
     }
-}
-
-// This is convoluted because we need to randomly generate options for AutoFilter and options for the AutoFilter's Filter
-interface GetAutoFilterConfig {
-    autoFilterOptions: Partial<AutoFilterOptions>;
-    filterOptions: Partial<FilterOptions>;
 }
 
 const getFilterType = (): FilterOptions["type"] => {
@@ -94,20 +88,19 @@ const getOctaves = (filterType: FilterOptions["type"]): number => {
     }
 };
 
-const getAutoFilterOptions = (): GetAutoFilterConfig => {
+const getAutoFilterOptions = (): Partial<AutoFilterOptions> => {
     const filterType = getFilterType();
 
     // Generate config for the Tone.Autofilter effect
     return {
-        autoFilterOptions: {
-            baseFrequency: getBaseFrequency(filterType),
-            octaves: getOctaves(filterType),
-            wet: 1,
-            frequency: random(0.02, 0.07, true),
-        },
-        filterOptions: {
+        baseFrequency: getBaseFrequency(filterType),
+        octaves: getOctaves(filterType),
+        wet: 1,
+        frequency: random(0.02, 0.07, true),
+        filter: {
             type: filterType,
             Q: random(6, 12), // This seems interesting without being OTT
+            rolloff: -12,
         },
     };
 };
@@ -133,15 +126,13 @@ export class FilterDelay extends Effect {
 
         // Determine filter type: fixed vs LFO variable
         // 50/50 chance
-        let useLFO = getBoolChoice(0.5);
-        useLFO = true;
+        const useLFO = getBoolChoice(0.5);
 
         if (useLFO) {
-            const { autoFilterOptions, filterOptions } = getAutoFilterOptions();
+            const autoFilterOptions = getAutoFilterOptions();
             // TODO: remove debug
             console.log("autofilter", autoFilterOptions);
             const autoFilter = new Tone.AutoFilter(autoFilterOptions).connect(delay);
-            autoFilter.filter.set(filterOptions);
             autoFilter.start();
             super(autoFilter);
         } else {
@@ -179,5 +170,90 @@ export class Reverb extends Effect {
             random(200, 4000, true), // Dampening frequency, 0hz - 99khz
         );
         super(reverb);
+    }
+}
+
+export class DoubleDelay extends Effect {
+    delay1: Tone.FeedbackDelay;
+    delay2: Tone.FeedbackDelay;
+    pan1: Tone.Panner;
+    pan2: Tone.Panner;
+
+    constructor() {
+        const gain = new Tone.Gain();
+
+        // Pass super a gain, meaning we have control over delays and their pan positions
+        super(gain);
+
+        // Create delay1
+        const delay1Conf = {
+            delayTime: random(0.06, 0.2, true),
+            feedback: 0,
+            wet: random(0.3, 0.6, true),
+        };
+        this.delay1 = new Tone.FeedbackDelay(delay1Conf);
+        gain.connect(this.delay1);
+
+        const delay2Conf = {
+            delayTime: random(0.2, 0.6, true),
+            feedback: random(0.2, 0.6, true),
+            wet: random(0.2, 0.4, true),
+        };
+        this.delay2 = new Tone.FeedbackDelay(delay2Conf);
+
+        this.pan1 = new Tone.Panner();
+        this.pan2 = new Tone.Panner();
+        const panPositions = getPanPositions(2);
+
+        // This bit varies pan positions
+        if (getBoolChoice(0.5)) {
+            this.pan1.set({ pan: panPositions[0] });
+            this.pan2.set({ pan: panPositions[1] });
+        } else {
+            this.pan1.set({ pan: panPositions[1] });
+            this.pan2.set({ pan: panPositions[0] });
+        }
+
+        // Create delay2
+        console.log(
+            "Double delay",
+            { ...delay1Conf, pan: this.pan1.pan.value },
+            { ...delay2Conf, pan: this.pan2.pan.value },
+        );
+        this.delay1.connect(this.delay2);
+    }
+
+    dispose(): void {
+        this.connectNode.dispose();
+        this.delay1.dispose();
+        this.delay2.dispose();
+        this.pan1.dispose();
+        this.pan2.dispose();
+    }
+
+    connect(): void {
+        this.delay1.connect(this.pan1);
+        this.delay2.connect(this.pan2);
+        this.pan1.toDestination();
+        this.pan2.toDestination();
+    }
+}
+
+export class RandDelay extends Effect {
+    constructor() {
+        const maxDelay = random(0.1, 1);
+        // We add 1 because numeric choice can be 0
+        const delay = new Tone.PingPongDelay({
+            delayTime: random(0.1, 1),
+            wet: random(0.2, 0.4, true),
+            feedback: random(0.2, 0.4, true),
+            maxDelay: maxDelay,
+        });
+        super(delay);
+
+        // Randomly change the delayTime. Ideally we'd do this with a Tone.LFO connected to delay time, but delay
+        Tone.Transport.scheduleRepeat((time) => {
+            delay.set({ delayTime: random(0.1, maxDelay) });
+        }, maxDelay);
     }
 }

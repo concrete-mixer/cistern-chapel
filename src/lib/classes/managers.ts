@@ -2,14 +2,40 @@ import { loopVolume, concreteVolume } from "../constants";
 import { getBoolChoice, getBufferMapData, getNumericChoice, getPanPositions, getSinglePanPosition } from "../helpers";
 import * as Tone from "tone";
 import shuffle from "lodash.shuffle";
+import without from "lodash.without";
 import { ToneAudioBuffersUrlMap } from "tone/build/esm/core/context/ToneAudioBuffers";
-import { Effect, PingPongDelay, FilterDelay, PitchShift } from "./effects";
+import * as Effects from "./effects";
 import { LoopPlayer, DronePlayer, OneShotPlayer } from "./players";
 
 class SoundManager {
     stopPressed = false;
     buffers: Tone.ToneAudioBuffers;
     buffersMap: ToneAudioBuffersUrlMap;
+    currentlyPlayingKeys: string[] = [];
+
+    getNextBufferToPlay(): Tone.ToneAudioBuffer {
+        // We want to work out which buffer to play next, excluding any buffers that are currently
+        // playing or about to be replaced, to avoid repetition
+        // First get file paths of all buffers, using them as unique keys
+        const allKeys = Object.keys(this.buffersMap);
+
+        // Filter out currently playing keys
+        let keysToShuffle = allKeys;
+
+        if (this.currentlyPlayingKeys.length > 0) {
+            keysToShuffle = without(allKeys, ...this.currentlyPlayingKeys);
+
+            // Remove the oldest currently playing key
+            this.currentlyPlayingKeys.shift();
+        }
+
+        // Select a new key to play
+        const keyToPlay = shuffle(keysToShuffle)[0];
+
+        // Top up this.currentlyPlayingKeys
+        this.currentlyPlayingKeys.push(keyToPlay);
+        return this.buffers.get(keyToPlay);
+    }
 }
 
 export class LoopManager extends SoundManager {
@@ -35,14 +61,19 @@ export class LoopManager extends SoundManager {
         Tone.Transport.scheduleRepeat((time) => this.makeChoice(), 20, 20);
     }
 
-    getEffect(): Effect {
-        const choice = getNumericChoice(2);
+    getEffect(): Effects.Effect {
+        let choice = getNumericChoice(4);
+        choice = 3;
 
         switch (choice) {
             case 0:
-                return new PingPongDelay();
+                return new Effects.PingPongDelay();
             case 1:
-                return new FilterDelay();
+                return new Effects.FilterDelay();
+            case 2:
+                return new Effects.DoubleDelay();
+            case 3:
+                return new Effects.RandDelay();
             default:
                 console.log("Hmm, shouldn't get here.");
         }
@@ -57,10 +88,9 @@ export class LoopManager extends SoundManager {
             // Get some things
             // Pop off oldest playing loop
             const loop = this.players.shift();
-            const keyToPlay = shuffle(Object.keys(this.buffersMap))[0];
 
             // Make it happen
-            loop.playNew(this.buffers.get(keyToPlay), this.getEffect());
+            loop.playNew(this.getNextBufferToPlay(), this.getEffect());
 
             // Push to the bottom of pile
             this.players.push(loop);
@@ -114,8 +144,7 @@ export class OneShotManager extends SoundManager {
 
         if (getBoolChoice(0.25)) {
             const player = this.players[playerIndex];
-            const keyToPlay = shuffle(Object.keys(this.buffersMap))[0];
-            player.playNew(this.buffers.get(keyToPlay), this.getEffect(), getSinglePanPosition());
+            player.playNew(this.getNextBufferToPlay(), this.getEffect(), getSinglePanPosition());
         }
     }
 
@@ -129,18 +158,23 @@ export class OneShotManager extends SoundManager {
         return -1; // As per Array.indexOf() an index of -1 will be interpreted as not found
     }
 
-    getEffect(): Effect {
-        const choice = getNumericChoice(3);
+    getEffect(): Effects.Effect {
+        let choice = getNumericChoice(5);
+        choice = 4;
 
         switch (choice) {
             case 0:
-                return new PingPongDelay();
+                return new Effects.PingPongDelay();
             case 1:
-                return new FilterDelay();
+                return new Effects.FilterDelay();
             // case 2:
             //     return new Reverb();
             case 2:
-                return new PitchShift();
+                return new Effects.PitchShift();
+            case 3:
+                return new Effects.DoubleDelay();
+            case 4:
+                return new Effects.RandDelay();
             default:
                 console.log("Hmm, shouldn't get here.");
         }
@@ -188,11 +222,13 @@ export class CCManager {
         this.loopManager = new LoopManager(bfm.loopBuffers, bfm.loopMap);
         this.concreteManager = new OneShotManager(bfm.concreteBuffers, bfm.concreteMap, concreteVolume);
         this.instrumentalManager = new OneShotManager(bfm.instrumentalBuffers, bfm.instrumentalMap, loopVolume);
+
+        // Dronemanager still a bit experimental, so commented out for now
         // this.droneManager = new DroneManager(bfm.droneBuffers, bfm.droneMap);
     }
 
     start(): void {
-        // We've played, then we've stopped, now we're playing again. First dispose of pre-existing loops then recompile loops
+        // Initialise the managers (works whether they're being stood up for the first time or reinitialised for a start -> stop -> start)
         this.loopManager.initialise();
         this.concreteManager.initialise();
         this.instrumentalManager.initialise();
