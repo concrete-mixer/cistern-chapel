@@ -27,21 +27,21 @@ export const getBoolChoice = (frequency: number): boolean => {
     return choice === 0 ? true : false;
 };
 
-export const getPanPositions = (loopsCount: number): number[] => {
+export const getPanPositions = (positionsCount: number): number[] => {
     // The idea is to return appropriate pan positions for the number of loops we're using
     // The range is between -1 (hard left) and 1 (hard right).
     // We're not going to want more than 4 loops concurrently without overloading the mix so return
     // up to four
-    if (loopsCount === 1) {
+    if (positionsCount === 1) {
         // If only one loop, make its pan position center (0)
         return [0];
     }
 
-    const increment = new Decimal(1.5 / (loopsCount - 1));
+    const increment = new Decimal(1.5 / (positionsCount - 1));
     const panPositions: number[] = [];
     let cursor = new Decimal(-0.75);
 
-    for (let i = 0; i < loopsCount; i++) {
+    for (let i = 0; i < positionsCount; i++) {
         panPositions.push(cursor.toDecimalPlaces(4).toNumber());
         cursor = cursor.plus(increment);
     }
