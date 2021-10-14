@@ -38,10 +38,10 @@ module.exports = {
             meta: {
                 author: "Concrete Mixer Audio",
                 description: "Cistern Chapel web audio sound art of sorts",
-                "Content-Security-Policy": {
-                    "http-equiv": "Content-Security-Policy",
-                    content: "default-src 'self'; object-src 'none'",
-                },
+                // "Content-Security-Policy": {
+                //     "http-equiv": "Content-Security-Policy",
+                //     content: "default-src 'self'; object-src 'none'",
+                // },
             },
         }),
         new CopyPlugin({

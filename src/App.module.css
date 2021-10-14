@@ -17,6 +17,7 @@ h1 {
     font-size: 60px;
     line-height: 1;
     margin: 0 auto 40px;
+    text-align: center;
 }
 
 .backgroundWrapper {
@@ -41,11 +42,6 @@ h1 {
     height: 100%;
 }
 
-.backgroundAttribution {
-    font-size: 12px;
-    display: none;
-}
-
 
 .box {
     background-color: #883714;
@@ -58,7 +54,6 @@ h1 {
 body, html {
     margin: 0;
     color: white;
-    text-align: center;
     height: 100%;
     display: grid;
 }
@@ -76,12 +71,16 @@ button {
     cursor: pointer;
     font-size: 16px;
     font-weight: bold;
+    margin: auto;
     margin-top: 20px;
+    display: block;
+    text-align: center;
 }
 
 button:disabled {
     color: gray;
     border-color: gray;
+    text-align: center;
 }
 
 .explanation {
@@ -97,13 +96,19 @@ button:disabled {
 }
 
 @media screen and (min-height: 720px) {
-    .backgroundAttribution, .backgroundWrapper{
+    .backgroundWrapper{
         display: block;
     }
 }
 
 @media screen and (min-width: 540px) {
-    .backgroundAttribution, .backgroundWrapper{
+    .backgroundWrapper{
         display: block;
     }
+}
+
+.nav {
+    text-align: right;
+    text-decoration: underline;
+    cursor: pointer;
 }
