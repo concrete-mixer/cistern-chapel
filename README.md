@@ -7,3 +7,7 @@ A sound-art project one page app built with tonejs + typescript + webpack + a ti
 1. Clone the repo
 2. Run `npm run start`
 3. Browse to [http://localhost:8080](http://localhost:8080). Press "Play Audio".
+
+# Demo
+
+[Worship in the Cistern Chapel](https://concrete-mixer.github.io/cistern-chapel/)
