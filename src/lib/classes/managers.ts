@@ -69,7 +69,7 @@ export class LoopManager extends SoundManager {
     }
 
     getEffect(): Effects.Effect {
-        const choice = getNumericChoice(4);
+        const choice = getNumericChoice(3);
 
         switch (choice) {
             case 0:
@@ -78,10 +78,8 @@ export class LoopManager extends SoundManager {
                 return new Effects.FilterDelay();
             case 2:
                 return new Effects.DoubleDelay();
-            case 3:
-                return new Effects.RandDelay();
             default:
-                console.log("Hmm, shouldn't get here.");
+                throw new Error("Out of bounds effect choice");
         }
     }
 
@@ -165,7 +163,7 @@ export class OneShotManager extends SoundManager {
     }
 
     getEffect(): Effects.Effect {
-        const choice = getNumericChoice(5);
+        const choice = getNumericChoice(4);
 
         switch (choice) {
             case 0:
@@ -176,10 +174,8 @@ export class OneShotManager extends SoundManager {
                 return new Effects.PitchShift();
             case 3:
                 return new Effects.DoubleDelay();
-            case 4:
-                return new Effects.RandDelay();
             default:
-                console.log("Hmm, shouldn't get here.");
+                throw new Error("Out of bounds effect choice");
         }
     }
 

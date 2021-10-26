@@ -228,22 +228,3 @@ export class DoubleDelay extends Effect {
         this.pan2.toDestination();
     }
 }
-
-export class RandDelay extends Effect {
-    constructor() {
-        const maxDelay = random(0.1, 1);
-        // We add 1 because numeric choice can be 0
-        const delay = new Tone.PingPongDelay({
-            delayTime: random(0.1, 1, true),
-            wet: random(0.2, 0.4, true),
-            feedback: random(0.2, 0.4, true),
-            maxDelay: maxDelay,
-        });
-        super(delay);
-
-        // Randomly change the delayTime. Ideally we'd do this with a Tone.LFO connected to delay time, but delay
-        Tone.Transport.scheduleRepeat((time) => {
-            delay.set({ delayTime: random(0.1, maxDelay) });
-        }, maxDelay);
-    }
-}
