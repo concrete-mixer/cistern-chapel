@@ -5,7 +5,7 @@ import shuffle from "lodash.shuffle";
 import without from "lodash.without";
 import { ToneAudioBuffersUrlMap } from "tone/build/esm/core/context/ToneAudioBuffers";
 import * as Effects from "./effects";
-import { LoopPlayer, DronePlayer, OneShotPlayer } from "./players";
+import { LoopPlayer, OneShotPlayer } from "./players";
 
 class SoundManager {
     stopPressed = false;
@@ -41,7 +41,7 @@ class SoundManager {
 export class LoopManager extends SoundManager {
     loopsCount = 2;
     panPositions = getPanPositions(this.loopsCount);
-    players: LoopPlayer[] | DronePlayer[];
+    players: LoopPlayer[];
 
     constructor(loopBuffers: Tone.ToneAudioBuffers, loopMap: ToneAudioBuffersUrlMap) {
         super();
@@ -52,7 +52,14 @@ export class LoopManager extends SoundManager {
 
     initialise(): void {
         const keys = shuffle(Object.keys(this.buffersMap));
-        this.players = [new LoopPlayer(this.panPositions[0]), new LoopPlayer(this.panPositions[1])];
+
+        // Initialise players
+        const players: LoopPlayer[] = [];
+
+        for (let i = 0; i < this.loopsCount; i++) {
+            players.push(new LoopPlayer(this.panPositions[i]));
+        }
+        this.players = players;
 
         // Need to assign different files
         for (let i = 0; i < this.players.length; i++) {
@@ -188,28 +195,10 @@ export class OneShotManager extends SoundManager {
     }
 }
 
-export class DroneManager extends LoopManager {
-    constructor(buffers: Tone.ToneAudioBuffers, buffersMap: ToneAudioBuffersUrlMap) {
-        super(buffers, buffersMap);
-    }
-
-    initialise(): void {
-        const keys = shuffle(Object.keys(this.buffersMap));
-        this.players = [new DronePlayer(this.panPositions[0]), new DronePlayer(this.panPositions[1])];
-
-        // Need to assign different files
-        for (let i = 0; i < this.players.length; i++) {
-            this.players[i].play(this.buffers.get(keys[i]), this.getEffect());
-        }
-        Tone.Transport.scheduleRepeat((time) => this.makeChoice(), 20, 20);
-    }
-}
-
 export class CCManager {
     loopManager: LoopManager;
     concreteManager: OneShotManager;
     instrumentalManager: OneShotManager;
-    droneManager: DroneManager;
 
     constructor() {
         // Initialise our children. Fly, my pretties!
@@ -218,9 +207,6 @@ export class CCManager {
         this.loopManager = new LoopManager(bfm.loopBuffers, bfm.loopMap);
         this.concreteManager = new OneShotManager(bfm.concreteBuffers, bfm.concreteMap, concreteVolume);
         this.instrumentalManager = new OneShotManager(bfm.instrumentalBuffers, bfm.instrumentalMap, loopVolume);
-
-        // Dronemanager still a bit experimental, so commented out for now
-        // this.droneManager = new DroneManager(bfm.droneBuffers, bfm.droneMap);
     }
 
     start(): void {
@@ -228,13 +214,11 @@ export class CCManager {
         this.loopManager.initialise();
         this.concreteManager.initialise();
         this.instrumentalManager.initialise();
-        // this.droneManager.initialise();
     }
 
     stop(): void {
         this.loopManager.dispose();
         this.concreteManager.dispose();
         this.instrumentalManager.dispose();
-        // this.droneManager.dispose();
     }
 }

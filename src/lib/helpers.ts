@@ -63,20 +63,17 @@ export const getSinglePanPosition = (): number => {
 let loopBuffers: Tone.ToneAudioBuffers;
 let concreteBuffers: Tone.ToneAudioBuffers;
 let instrumentalBuffers: Tone.ToneAudioBuffers;
-let droneBuffers: Tone.ToneAudioBuffers;
 
 const loopMap: ToneAudioBuffersUrlMap = {};
 const concreteMap: ToneAudioBuffersUrlMap = {};
 const instrumentalMap: ToneAudioBuffersUrlMap = {};
-const droneMap: ToneAudioBuffersUrlMap = {};
 
 let loopBuffersReady = false;
 let concreteBuffersReady = false;
 let instrumentalBuffersReady = false;
-let droneBuffersReady = false;
 
 export const areWeReady = (): boolean => {
-    return loopBuffersReady && concreteBuffersReady && instrumentalBuffersReady && droneBuffersReady;
+    return loopBuffersReady && concreteBuffersReady && instrumentalBuffersReady;
 };
 
 interface BuffersAndMaps {
@@ -86,8 +83,6 @@ interface BuffersAndMaps {
     concreteMap: ToneAudioBuffersUrlMap;
     instrumentalBuffers: Tone.ToneAudioBuffers;
     instrumentalMap: ToneAudioBuffersUrlMap;
-    droneBuffers: Tone.ToneAudioBuffers;
-    droneMap: ToneAudioBuffersUrlMap;
 }
 
 export const getBufferMapData = (): BuffersAndMaps => {
@@ -98,8 +93,6 @@ export const getBufferMapData = (): BuffersAndMaps => {
         concreteMap,
         instrumentalBuffers,
         instrumentalMap,
-        droneBuffers,
-        droneMap,
     };
 };
 
@@ -117,8 +110,6 @@ export const compileBuffers = async (): Promise<void> => {
         if (f.match(/^audio\/*/)) {
             if (f.match(/^audio\/loops/)) {
                 loopMap[f] = f;
-            } else if (f.match(/^audio\/drones/)) {
-                droneMap[f] = f;
             } else if (f.match(/^audio\/oneshot\/instrumental/)) {
                 instrumentalMap[f] = f;
             } else if (f.match(/^audio\/oneshot\/concrete/)) {
@@ -148,13 +139,6 @@ export const compileBuffers = async (): Promise<void> => {
         onload: () => {
             console.log("loaded concrete buffers");
             concreteBuffersReady = true;
-        },
-    });
-    droneBuffers = new Tone.ToneAudioBuffers({
-        urls: droneMap,
-        onload: () => {
-            console.log("loaded drone buffers");
-            droneBuffersReady = true;
         },
     });
 };

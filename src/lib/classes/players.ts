@@ -3,8 +3,6 @@ import { Effect } from "./effects";
 import * as Tone from "tone";
 import { getBoolChoice } from "../helpers";
 import { loopFade, reverseProbability, loopVolume } from "../constants";
-import shuffle from "lodash.shuffle";
-import random from "lodash.random";
 
 export class CCPlayer {
     config: Partial<PlayerOptions> = {
@@ -19,7 +17,7 @@ export class CCPlayer {
             this.player.stop();
         },
     };
-    player: Tone.Player | Tone.GrainPlayer;
+    player: Tone.Player;
     panPosition: number;
     panner: Tone.Panner;
     effect: Effect;
@@ -110,47 +108,5 @@ export class LoopPlayer extends CCPlayer {
 export class OneShotPlayer extends CCPlayer {
     constructor(volume: number) {
         super({ volume });
-    }
-}
-
-export class DronePlayer extends LoopPlayer {
-    constructor(panPosition: number) {
-        super(panPosition);
-        this.player = new Tone.GrainPlayer();
-    }
-
-    play(buffer: Tone.ToneAudioBuffer, effect: Effect): void {
-        this.player.buffer = buffer;
-
-        if (this.effect) {
-            this.effect.dispose();
-        }
-
-        this.effect = effect;
-
-        // Connect components together
-        this.player.connect(this.panner);
-        this.panner.connect(this.effect.connectNode);
-        this.effect.connect();
-
-        // Define grainplayer values separately for debugging
-        const data = {
-            playbackRate: random(0.125, 0.3, true),
-            // playbackRate: 1,
-            grainSize: random(0.1, 0.2, true),
-            overlap: random(0.2, 0.8, true),
-            detune: shuffle([-1200, -700, -500, 0])[0],
-            // detune: 2400,
-            loop: true,
-            volume: loopVolume,
-            loopStart: 0,
-            reverse: getBoolChoice(reverseProbability),
-            onstop: () => {
-                this.player.stop();
-            },
-        };
-
-        this.player.set(data);
-        this.player.start();
     }
 }
