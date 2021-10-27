@@ -3,6 +3,7 @@ const CopyPlugin = require("copy-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { WebpackManifestPlugin } = require("webpack-manifest-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 
 module.exports = {
     entry: "./src/index.tsx",
@@ -55,5 +56,8 @@ module.exports = {
         path: path.resolve(__dirname, "dist"),
         clean: true,
         publicPath: "", // To resolve the WebpackManifestPlugin prefixing output with "auto"
+    },
+    optimization: {
+        minimizer: [new CssMinimizerPlugin()],
     },
 };
