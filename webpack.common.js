@@ -4,6 +4,7 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { WebpackManifestPlugin } = require("webpack-manifest-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
+const TerserPlugin = require("terser-webpack-plugin");
 
 module.exports = {
     entry: "./src/index.tsx",
@@ -58,6 +59,6 @@ module.exports = {
         publicPath: "", // To resolve the WebpackManifestPlugin prefixing output with "auto"
     },
     optimization: {
-        minimizer: [new CssMinimizerPlugin()],
+        minimizer: [new CssMinimizerPlugin(), new TerserPlugin()],
     },
 };
