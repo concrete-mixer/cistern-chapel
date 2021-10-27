@@ -5,8 +5,8 @@
   "private": true,
   "scripts": {
     "test": "jest",
-    "start": "webpack serve",
-    "build": "webpack",
+    "start": "webpack serve --config webpack.dev.js",
+    "build": "webpack --config webpack.prod.js",
     "lint": "eslint '*/**/*.{js,ts,tsx}' --quiet --fix"
   },
   "keywords": [],
@@ -30,7 +30,8 @@
     "webpack": "^5.52.1",
     "webpack-cli": "^4.8.0",
     "webpack-dev-server": "^4.3.0",
-    "webpack-manifest-plugin": "^4.0.2"
+    "webpack-manifest-plugin": "^4.0.2",
+    "webpack-merge": "^5.8.0"
   },
   "dependencies": {
     "css-loader": "^6.3.0",

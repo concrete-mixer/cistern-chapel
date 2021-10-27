@@ -5,12 +5,7 @@ const { WebpackManifestPlugin } = require("webpack-manifest-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 module.exports = {
-    mode: "development",
     entry: "./src/index.tsx",
-    devtool: "inline-source-map",
-    devServer: {
-        static: "./dist",
-    },
     module: {
         rules: [
             {
@@ -45,7 +40,7 @@ module.exports = {
             },
         }),
         new CopyPlugin({
-            patterns: [{ from: "src/audio", to: "audio" }],
+            patterns: [{ from: "./src/audio", to: "audio" }],
         }),
         new WebpackManifestPlugin({}),
         new MiniCssExtractPlugin({
