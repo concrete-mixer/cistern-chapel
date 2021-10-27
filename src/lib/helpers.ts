@@ -53,13 +53,6 @@ export const getSinglePanPosition = (): number => {
     return shuffle([-1, 0.5, 0, 0.5, 1])[0];
 };
 
-// Declare our loops and oneShot structures here so we can return if we can cache them
-// const loops: Loops = [];
-// const oneShots: OneShots = {
-//     instrumental: [],
-//     concrete: [],
-// };
-
 let loopBuffers: Tone.ToneAudioBuffers;
 let concreteBuffers: Tone.ToneAudioBuffers;
 let instrumentalBuffers: Tone.ToneAudioBuffers;
