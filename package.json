@@ -6,6 +6,7 @@
   "scripts": {
     "test": "jest",
     "start": "webpack serve --config webpack.dev.js",
+    "serve": "http-server dist --config webpack.prod.js",
     "build": "webpack --config webpack.prod.js",
     "lint": "eslint '*/**/*.{js,ts,tsx}' --quiet --fix"
   },
@@ -38,9 +39,11 @@
     "webpack-cli": "^4.8.0",
     "webpack-dev-server": "^4.3.0",
     "webpack-manifest-plugin": "^4.0.2",
-    "webpack-merge": "^5.8.0"
+    "webpack-merge": "^5.8.0",
+    "workbox-webpack-plugin": "^6.3.0"
   },
   "dependencies": {
+    "@types/workbox-webpack-plugin": "^5.1.8",
     "decimal.js-light": "^2.5.1",
     "lodash.random": "^3.2.0",
     "lodash.shuffle": "^4.2.0",
