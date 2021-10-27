@@ -2,9 +2,10 @@ import * as React from "react";
 import { start, stop } from "./lib/control";
 import styles from "./App.module.css";
 import { PageProps } from "./App";
+import * as Tone from "tone";
 
 const MainPage = ({ setPageState }: PageProps): React.ReactElement => {
-    const [playerState, setPlayerState] = React.useState("stopped");
+    const [playerState, setPlayerState] = React.useState(Tone.Transport.state === "started" ? "playing" : "stopped");
 
     return (
         <div>
