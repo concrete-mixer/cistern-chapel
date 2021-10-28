@@ -5,7 +5,7 @@ const { WebpackManifestPlugin } = require("webpack-manifest-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
-const WorkboxPlugin = require("workbox-webpack-plugin");
+var WebpackPwaManifest = require("webpack-pwa-manifest");
 
 module.exports = {
     entry: "./src/index.tsx",
@@ -21,7 +21,7 @@ module.exports = {
                 use: [MiniCssExtractPlugin.loader, "css-loader"],
             },
             {
-                test: /\.(png|svg|jpg|jpeg|gif|webp)$/i,
+                test: /\.(png|svg|jpg|jpeg|gif|webp|ico)$/i,
                 type: "asset/resource",
             },
             {
@@ -33,28 +33,46 @@ module.exports = {
     plugins: [
         new HtmlWebpackPlugin({
             title: "Cistern Chapel",
-            meta: {
-                author: "Concrete Mixer Audio",
-                description: "Cistern Chapel web audio sound art of sorts",
-                // "Content-Security-Policy": {
-                //     "http-equiv": "Content-Security-Policy",
-                //     content: "default-src 'self'; object-src 'none'",
-                // },
-            },
+            template: "./src/index-template.html",
+            favicon: "src/assets/icons/favicon.ico",
         }),
         new CopyPlugin({
             patterns: [{ from: "./src/audio", to: "audio" }],
         }),
-        new WebpackManifestPlugin({}),
+        new WebpackManifestPlugin({ fileName: "audio/manifest.json" }),
         new MiniCssExtractPlugin({
             filename: "[name].[contenthash].css",
         }),
-        new WorkboxPlugin.GenerateSW({
-            // these options encourage the ServiceWorkers to get in there fast
-            // and not allow any straggling "old" SWs to hang around
-            clientsClaim: true,
-            skipWaiting: true,
-            maximumFileSizeToCacheInBytes: 10240000,
+        new WebpackPwaManifest({
+            name: "Cistern Chapel",
+            short_name: "CisternChapel",
+            description: "Cistern Chapel web audio sound art of sorts",
+            background_color: "black",
+            theme_color: "#883714",
+            start_url: "/cistern-chapel",
+            icons: [
+                {
+                    src: path.resolve("src/assets/icons/android-chrome-192x192.png"),
+                    sizes: "192x192",
+                    type: "image/png",
+                    purpose: "any maskable",
+                },
+                {
+                    src: path.resolve("src/assets/icons/android-chrome-512x512.png"),
+                    sizes: "512x512",
+                    type: "image/png",
+                },
+                {
+                    src: path.resolve("src/assets/icons/favicon-16x16.png"),
+                    sizes: "16x16",
+                    type: "image/png",
+                },
+                {
+                    src: path.resolve("src/assets/icons/favicon-32x32.png"),
+                    sizes: "32x32",
+                    type: "image/png",
+                },
+            ],
         }),
     ],
     resolve: {

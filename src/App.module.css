@@ -6,6 +6,9 @@
     font-style:normal;
 }
 
+*,*:focus,*:hover{
+    outline:none;
+}
 
 body {
     font-family: sans-serif;

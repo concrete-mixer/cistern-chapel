@@ -17,6 +17,7 @@ const MainPage = ({ setPageState }: PageProps): React.ReactElement => {
                         setPlayerState("loading");
                         start(() => setPlayerState("playing"));
                     }}
+                    autoFocus
                 >
                     Play audio
                 </button>
@@ -28,6 +29,7 @@ const MainPage = ({ setPageState }: PageProps): React.ReactElement => {
                         setPlayerState("stopped");
                         stop();
                     }}
+                    autoFocus
                 >
                     Stop audio
                 </button>

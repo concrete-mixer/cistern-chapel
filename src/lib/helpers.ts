@@ -93,7 +93,7 @@ export const compileBuffers = async (): Promise<void> => {
     // Build a list of audio files structured for random selection
     let manifest: IPackageJson;
 
-    await fetch("./manifest.json")
+    await fetch("./audio/manifest.json")
         .then((response) => response.json())
         .then((obj) => (manifest = obj));
 
