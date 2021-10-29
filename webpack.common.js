@@ -37,7 +37,10 @@ module.exports = {
             favicon: "src/assets/icons/favicon.ico",
         }),
         new CopyPlugin({
-            patterns: [{ from: "./src/audio", to: "audio" }],
+            patterns: [
+                { from: "./src/audio", to: "audio" },
+                { from: "./src/assets/icons", to: "icons" },
+            ],
         }),
         new WebpackManifestPlugin({ fileName: "audio/manifest.json" }),
         new MiniCssExtractPlugin({
@@ -49,7 +52,7 @@ module.exports = {
             description: "Cistern Chapel web audio sound art of sorts",
             background_color: "black",
             theme_color: "#883714",
-            start_url: "/cistern-chapel",
+            start_url: "/cistern-chapel/index.html",
             icons: [
                 {
                     src: path.resolve("src/assets/icons/android-chrome-192x192.png"),
@@ -60,16 +63,6 @@ module.exports = {
                 {
                     src: path.resolve("src/assets/icons/android-chrome-512x512.png"),
                     sizes: "512x512",
-                    type: "image/png",
-                },
-                {
-                    src: path.resolve("src/assets/icons/favicon-16x16.png"),
-                    sizes: "16x16",
-                    type: "image/png",
-                },
-                {
-                    src: path.resolve("src/assets/icons/favicon-32x32.png"),
-                    sizes: "32x32",
                     type: "image/png",
                 },
             ],
