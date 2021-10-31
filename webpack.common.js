@@ -1,7 +1,6 @@
 const path = require("path");
 const CopyPlugin = require("copy-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-const { WebpackManifestPlugin } = require("webpack-manifest-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const CssMinimizerPlugin = require("css-minimizer-webpack-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
@@ -42,7 +41,6 @@ module.exports = {
                 { from: "./src/assets/icons", to: "icons" },
             ],
         }),
-        new WebpackManifestPlugin({ fileName: "audio/manifest.json" }),
         new MiniCssExtractPlugin({
             filename: "[name].[contenthash].css",
         }),
